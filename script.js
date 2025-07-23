@@ -1,6 +1,4 @@
 // API Configuration
-const API_BASE_URL = "https://tooltypchuyendoidiem-production.up.railway.app";
-
 // DOM Elements
 const converterForm = document.getElementById("converterForm");
 const convertBtn = document.getElementById("convertBtn");
@@ -23,6 +21,104 @@ const methodNames = {
   apt: "APT",
   ket_hop: "Kết hợp",
 };
+
+// ====== PTIT Score Converter Local Logic ======
+
+// 1. Định nghĩa phương thức
+const Method = {
+  thpt: "thpt",
+  tai_nang: "tai_nang",
+  sat: "sat",
+  act: "act",
+  hsa: "hsa",
+  tsa: "tsa",
+  spt: "spt",
+  apt: "apt",
+  ket_hop: "ket_hop",
+};
+
+// 2. Bảng khoảng điểm
+const BRACKETS = [
+  {
+    thpt: [27.25, 30],
+    tai_nang: [85, 100],
+    sat: [1450, 1600],
+    act: [33, 36],
+    hsa: [105, 150],
+    tsa: [75.53, 100],
+    spt: [25, 30],
+    apt: [959, 1200],
+    ket_hop: [28.75, 30],
+  },
+  {
+    thpt: [25.25, 27.25],
+    tai_nang: [80, 85],
+    sat: [1350, 1450],
+    act: [30, 33],
+    hsa: [97, 105],
+    tsa: [69.29, 75.53],
+    spt: [22.75, 25],
+    apt: [887, 959],
+    ket_hop: [27.75, 28.75],
+  },
+  {
+    thpt: [23.5, 25.25],
+    tai_nang: [42.5, 80],
+    sat: [1250, 1350],
+    act: [28, 30],
+    hsa: [91, 97],
+    tsa: [65.42, 69.29],
+    spt: [20.5, 22.75],
+    apt: [816, 887],
+    ket_hop: [26.5, 27.75],
+  },
+  {
+    thpt: [20.5, 23.5],
+    sat: [1130, 1250],
+    act: [25, 28],
+    hsa: [82, 91],
+    tsa: [59.5, 65.42],
+    spt: [18.25, 20.5],
+    apt: [702, 816],
+    ket_hop: [24.5, 26.5],
+  },
+  {
+    thpt: [0, 20.5],
+    hsa: [75, 82],
+    tsa: [50, 59.5],
+    spt: [15, 18.25],
+    apt: [600, 702],
+    ket_hop: [22.5, 24.5],
+  },
+];
+
+// 3. Logic tìm bracket
+function findBracket(method, score) {
+  for (let i = 0; i < BRACKETS.length; i++) {
+    const rng = BRACKETS[i][method];
+    if (rng && score >= rng[0] && score <= rng[1]) {
+      return { index: i, range: rng };
+    }
+  }
+  throw new Error(`Score ${score} vượt ngoài mọi khoảng của '${method}'`);
+}
+
+// 4. Logic quy đổi điểm
+function convertScore(src, tgt, score) {
+  const { index, range } = findBracket(src, score);
+  const tgtRng = BRACKETS[index][tgt];
+  if (!tgtRng) {
+    throw new Error(`Khoảng ${index + 1} không có dữ liệu cho '${tgt}'`);
+  }
+  const [a, b] = range;
+  const [c, d] = tgtRng;
+  const y = b === a ? c : c + ((score - a) * (d - c)) / (b - a);
+  return {
+    converted_score: Math.round(y * 10000) / 10000,
+    bracket_index: index + 1,
+  };
+}
+// ====== END PTIT Score Converter Local Logic ======
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", function () {
@@ -135,6 +231,7 @@ function validateSelects() {
   }
 }
 
+// Replace handleFormSubmit to use local logic
 async function handleFormSubmit(e) {
   e.preventDefault();
 
@@ -151,15 +248,17 @@ async function handleFormSubmit(e) {
     score: parseFloat(formData.get("score")),
   };
 
-  // Show loading state
   setLoadingState(true);
   hideResults();
 
   try {
-    const response = await callConvertAPI(requestData);
+    // Local conversion logic
+    const response = convertScore(
+      requestData.source_method,
+      requestData.target_method,
+      requestData.score
+    );
     displayResult(response, requestData);
-
-    // Add success animation
     resultSection.classList.add("success-pulse");
     setTimeout(() => {
       resultSection.classList.remove("success-pulse");
@@ -193,39 +292,6 @@ function validateForm() {
   }
 
   return isValid;
-}
-
-async function callConvertAPI(requestData) {
-  const response = await fetch(`${API_BASE_URL}/convert`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(requestData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const errorMessage = errorData.detail
-      ? formatValidationError(errorData.detail)
-      : `Lỗi HTTP: ${response.status} ${response.statusText}`;
-    throw new Error(errorMessage);
-  }
-
-  return await response.json();
-}
-
-function formatValidationError(details) {
-  if (Array.isArray(details)) {
-    return details
-      .map((detail) => {
-        const field = detail.loc ? detail.loc.join(".") : "Không xác định";
-        return `${field}: ${detail.msg}`;
-      })
-      .join("\n");
-  }
-  return "Dữ liệu đầu vào không hợp lệ";
 }
 
 function displayResult(response, requestData) {
