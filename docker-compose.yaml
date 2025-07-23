@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  quy-doi-diem-fe:
+    image: vinhbh/quy-doi-diem-fe:1.4
+    ports:
+      - "8080:80"
+    container_name: quy-doi-diem-fe
