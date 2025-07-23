@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PTIT Score Converter - Công cụ quy đổi điểm PTIT</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <h1>PTIT Score Converter</h1>
+          </div>
+          <p class="subtitle">Công cụ quy đổi điểm tương đương - Đợt 1/2025</p>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main">
+        <div class="converter-card">
+          <div class="card-header">
+            <i class="fas fa-calculator"></i>
+            <h2>Quy đổi điểm số</h2>
+          </div>
+
+          <form id="converterForm" class="converter-form">
+            <div class="form-group">
+              <label for="sourceMethod">
+                <i class="fas fa-arrow-right"></i>
+                Phương thức nguồn
+              </label>
+              <select id="sourceMethod" name="source_method" required>
+                <option value="">Chọn phương thức nguồn</option>
+                <option value="thpt">THPT Quốc gia</option>
+                <option value="tai_nang">Tài năng</option>
+                <option value="sat">SAT</option>
+                <option value="act">ACT</option>
+                <option value="hsa">HSA</option>
+                <option value="tsa">TSA</option>
+                <option value="spt">SPT</option>
+                <option value="apt">APT</option>
+                <option value="ket_hop">Kết hợp</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="targetMethod">
+                <i class="fas fa-bullseye"></i>
+                Phương thức đích
+              </label>
+              <select id="targetMethod" name="target_method" required>
+                <option value="">Chọn phương thức đích</option>
+                <option value="thpt">THPT Quốc gia</option>
+                <option value="tai_nang">Tài năng</option>
+                <option value="sat">SAT</option>
+                <option value="act">ACT</option>
+                <option value="hsa">HSA</option>
+                <option value="tsa">TSA</option>
+                <option value="spt">SPT</option>
+                <option value="apt">APT</option>
+                <option value="ket_hop">Kết hợp</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="score">
+                <i class="fas fa-star"></i>
+                Điểm số cần quy đổi
+              </label>
+              <input
+                type="number"
+                id="score"
+                name="score"
+                step="0.01"
+                min="0"
+                placeholder="Nhập điểm số..."
+                required
+              />
+            </div>
+
+            <button type="submit" class="convert-btn" id="convertBtn">
+              <i class="fas fa-exchange-alt"></i>
+              <span>Quy đổi điểm</span>
+              <div class="loading-spinner" id="loadingSpinner"></div>
+            </button>
+          </form>
+
+          <!-- Result Section -->
+          <div class="result-section" id="resultSection" style="display: none">
+            <div class="result-card">
+              <div class="result-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>Kết quả quy đổi</h3>
+              </div>
+              <div class="result-content">
+                <div class="result-item">
+                  <span class="result-label">Điểm đã quy đổi:</span>
+                  <span class="result-value" id="convertedScore">--</span>
+                </div>
+                <div class="result-item">
+                  <span class="result-label">Chỉ số bracket:</span>
+                  <span class="result-value" id="bracketIndex">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Section -->
+          <div class="error-section" id="errorSection" style="display: none">
+            <div class="error-card">
+              <div class="error-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Lỗi</h3>
+              </div>
+              <div class="error-content" id="errorContent">
+                Có lỗi xảy ra trong quá trình quy đổi điểm.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+          <div class="info-card">
+            <div class="info-header">
+              <i class="fas fa-info-circle"></i>
+              <h3>Thông tin về các phương thức</h3>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>THPT:</strong> Thi THPT Quốc gia
+              </div>
+              <div class="info-item">
+                <strong>Tài năng:</strong> Xét tuyển tài năng
+              </div>
+              <div class="info-item">
+                <strong>SAT:</strong> Scholastic Assessment Test
+              </div>
+              <div class="info-item">
+                <strong>ACT:</strong> American College Testing
+              </div>
+              <div class="info-item">
+                <strong>HSA:</strong> High School Assessment
+              </div>
+              <div class="info-item">
+                <strong>TSA:</strong> Thinking Skills Assessment
+              </div>
+              <div class="info-item">
+                <strong>SPT:</strong> Special Performance Test
+              </div>
+              <div class="info-item">
+                <strong>APT:</strong> Advanced Placement Test
+              </div>
+              <div class="info-item">
+                <strong>Kết hợp:</strong> Phương thức kết hợp
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>
+          &copy; 2025 PTIT Score Converter. Developed with ❤️ for PTIT students.
+        </p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
