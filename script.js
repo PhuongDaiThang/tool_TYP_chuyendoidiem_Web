@@ -300,6 +300,50 @@ function validateSelects() {
   }
 }
 
+async function testGetDiem() {
+  // Get form data
+  // {
+  //   thpt: [23.5, 25.25],
+  //   tai_nang: [42.5, 80],
+  //   sat: [1250, 1350],
+  //   act: [28, 30],
+  //   hsa: [91, 97],
+  //   tsa: [65.42, 69.29],
+  //   spt: [20.5, 22.75],
+  //   apt: [816, 887],
+  //   ket_hop: [26.5, 27.75],
+  // },
+  let list_get_diem = ["sat", "act", "spt", "apt"]
+  const arr = [
+  25.10, 24.87, 26.19, 24.61, 25.50, 25.80, 25.21, 25.67,
+  26.21, 24.40, 22.67, 25.25, 24.00, 22.75, 24.20, 25.10,
+  24.00, 23.47, 22.50, 23.63, 23.60, 23.14, 21.00, 22.65,
+  22.00, 23.48, 23.48, 22.20
+];
+
+  for(let i = 0; i<arr.length; i++)
+  {
+    console.log("THPT " +  arr[i] );
+    for(let j = 0; j< list_get_diem.length; j++)
+    {
+      let response = convertScore(
+      "thpt",
+      list_get_diem[j],
+      arr[i]
+      );
+    let isSpecial = response.special_case;
+    if (isSpecial) {
+      console.log("bắc" + list_get_diem[j] +  " " + response.converted_north.toFixed(4))
+      console.log("nam" + list_get_diem[j] + " " + response.converted_south.toFixed(4))
+    } else {
+      convertedScore.textContent = response.converted_score.toFixed(4);
+      console.log("bắc + nam" + " " + list_get_diem[j] + " "+ response.converted_score.toFixed(4))
+    }
+    }
+  }
+}
+
+
 // Replace handleFormSubmit to use local logic
 async function handleFormSubmit(e) {
   e.preventDefault();
@@ -372,7 +416,7 @@ function displayResult(response, requestData) {
       : `<span style="color: #ffffff;">Chưa đủ điểm sàn</span>`;
 
     const south = response.converted_south !== null
-      ? `<strong>${response.converted_south.toFixed(4)}</strong>`
+      ? `<strong>${response.converted_south.toFixed(2)}</strong>`
       : `<span style="color: #ffffff;">Chưa đủ điểm sàn</span>`;
 
     convertedScore.innerHTML = `
@@ -380,7 +424,7 @@ function displayResult(response, requestData) {
       <div>Phía Nam: ${south}</div>
     `;
   } else {
-    convertedScore.textContent = response.converted_score.toFixed(4);
+    convertedScore.textContent = response.converted_score.toFixed(2);
   }
 
   bracketIndex.textContent = response.bracket_index;
@@ -601,3 +645,4 @@ errorStyles.textContent = `
     }
 `;
 document.head.appendChild(errorStyles);
+testGetDiem()
