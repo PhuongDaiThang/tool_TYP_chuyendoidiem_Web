@@ -3,33 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Công cụ quy đổi điểm PTIT 2025</title>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
+    <title>Công cụ quy đổi điểm PTIT 2026</title>
+    <meta
+      name="description"
+      content="Công cụ quy đổi tương đương điểm giữa các phương thức xét tuyển đại học chính quy PTIT năm 2026 (THPT, Tài năng, SAT, ACT, TSA, HSA, V-ACT, SPT, Kết hợp)."
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=6" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=7" />
   </head>
   <body>
-    <div class="container">
+    <div class="page">
       <!-- Header -->
       <header class="header">
-        <div class="header-content">
+        <div class="header-inner">
           <div class="logo">
-            <i class="fas fa-graduation-cap"></i>
-            <h1>Quy đổi điểm xét tuyển PTIT 2025</h1>
+            <span class="logo-badge"><i class="fas fa-graduation-cap"></i></span>
+            <div class="logo-text">
+              <h1>Quy đổi điểm xét tuyển PTIT 2026</h1>
+              <p class="subtitle">
+                Bảng quy đổi tương đương giữa các phương thức xét tuyển đại học
+                hệ chính quy năm 2026 — Học viện Công nghệ Bưu chính Viễn thông
+              </p>
+            </div>
           </div>
-          <p class="subtitle">Công cụ quy đổi điểm 2025</p>
-          <p class="group-link">
-          Tham gia nhóm: 
-          <a href="https://www.facebook.com/groups/1071971684731819" target="_blank" rel="noopener noreferrer">
-            D25 - 2007 PTIT Hà Nội
-          </a> để cập nhật thông tin mới nhất về tuyển sinh Học viện Công nghệ Bưu chính Viễn thông
-        </p>
+          <div class="header-tags">
+            <span class="tag"><i class="fas fa-location-dot"></i> Phía Bắc (BVH)</span>
+            <span class="tag"><i class="fas fa-location-dot"></i> Phía Nam (BVS)</span>
+            <a
+              class="tag tag-link"
+              href="https://www.facebook.com/groups/d24hocviencongnghebuuchinhvienthong/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i class="fab fa-facebook"></i> Nhóm tuyển sinh PTIT Hà Nội
+            </a>
+          </div>
         </div>
       </header>
 
@@ -42,42 +59,54 @@
           </div>
 
           <form id="converterForm" class="converter-form" onsubmit="return false;">
-            <div class="form-group">
-              <label for="sourceMethod">
-                <i class="fas fa-arrow-right"></i>
-                Phương thức nguồn
-              </label>
-              <select id="sourceMethod" name="source_method" required>
-                <option value="">Chọn phương thức nguồn</option>
-                <option value="thpt">THPT Quốc gia</option>
-                <option value="tai_nang">Tài năng</option>
-                <option value="sat">SAT</option>
-                <option value="act">ACT</option>
-                <option value="hsa">HSA</option>
-                <option value="tsa">TSA</option>
-                <option value="spt">SPT</option>
-                <option value="apt">APT</option>
-                <option value="ket_hop">Kết hợp</option>
-              </select>
-            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sourceMethod">
+                  <i class="fas fa-arrow-right-from-bracket"></i>
+                  Phương thức nguồn
+                </label>
+                <select id="sourceMethod" name="source_method" required>
+                  <option value="">Chọn phương thức nguồn</option>
+                  <option value="thpt">Thi tốt nghiệp THPT (thang 30)</option>
+                  <option value="tai_nang">Xét tuyển Tài năng (thang 100)</option>
+                  <option value="sat">SAT (thang 1600)</option>
+                  <option value="act">ACT (thang 36)</option>
+                  <option value="tsa">TSA (thang 100)</option>
+                  <option value="hsa">HSA (thang 150)</option>
+                  <option value="v_act">V-ACT (thang 1200)</option>
+                  <option value="spt">SPT (thang 30)</option>
+                  <option value="ket_hop">Xét tuyển Kết hợp (thang 30)</option>
+                </select>
+              </div>
 
-            <div class="form-group">
-              <label for="targetMethod">
-                <i class="fas fa-bullseye"></i>
-                Phương thức đích
-              </label>
-              <select id="targetMethod" name="target_method" required>
-                <option value="">Chọn phương thức đích</option>
-                <option value="thpt">THPT Quốc gia</option>
-                <option value="tai_nang">Tài năng</option>
-                <option value="sat">SAT</option>
-                <option value="act">ACT</option>
-                <option value="hsa">HSA</option>
-                <option value="tsa">TSA</option>
-                <option value="spt">SPT</option>
-                <option value="apt">APT</option>
-                <option value="ket_hop">Kết hợp</option>
-              </select>
+              <button
+                type="button"
+                class="swap-btn"
+                id="swapBtn"
+                title="Hoán đổi phương thức"
+                aria-label="Hoán đổi phương thức nguồn và đích"
+              >
+                <i class="fas fa-right-left"></i>
+              </button>
+
+              <div class="form-group">
+                <label for="targetMethod">
+                  <i class="fas fa-bullseye"></i>
+                  Phương thức đích
+                </label>
+                <select id="targetMethod" name="target_method" required>
+                  <option value="">Chọn phương thức đích</option>
+                  <option value="thpt">Thi tốt nghiệp THPT (thang 30)</option>
+                  <option value="tai_nang">Xét tuyển Tài năng (thang 100)</option>
+                  <option value="sat">SAT (thang 1600)</option>
+                  <option value="act">ACT (thang 36)</option>
+                  <option value="tsa">TSA (thang 100)</option>
+                  <option value="hsa">HSA (thang 150)</option>
+                  <option value="v_act">V-ACT (thang 1200)</option>
+                  <option value="spt">SPT (thang 30)</option>
+                  <option value="ket_hop">Xét tuyển Kết hợp (thang 30)</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-group">
@@ -94,6 +123,7 @@
                 placeholder="Nhập điểm số..."
                 required
               />
+              <div class="score-hint" id="scoreHint"></div>
             </div>
 
             <button type="submit" class="convert-btn" id="convertBtn">
@@ -110,16 +140,10 @@
                 <i class="fas fa-check-circle"></i>
                 <h3>Kết quả quy đổi</h3>
               </div>
-              <div class="result-content">
-                <div class="result-item">
-                  <span class="result-label">Điểm đã quy đổi:</span>
-                  <span class="result-value" id="convertedScore">--</span>
-                </div>
-                <div class="result-item">
-                  <span class="result-label">Khoảng:</span>
-                  <span class="result-value" id="bracketIndex">--</span>
-                </div>
-              </div>
+              <div class="result-content" id="resultContent"></div>
+              <p class="result-note">
+                <i class="fas fa-hand-pointer"></i> Nhấn vào điểm để sao chép
+              </p>
             </div>
           </div>
 
@@ -128,7 +152,7 @@
             <div class="error-card">
               <div class="error-header">
                 <i class="fas fa-exclamation-triangle"></i>
-                <h3>Lỗi</h3>
+                <h3>Không thể quy đổi</h3>
               </div>
               <div class="error-content" id="errorContent">
                 Có lỗi xảy ra trong quá trình quy đổi điểm.
@@ -138,53 +162,86 @@
         </div>
 
         <!-- Info Section -->
-        <div class="info-section">
+        <aside class="info-section">
           <div class="info-card">
             <div class="info-header">
               <i class="fas fa-info-circle"></i>
-              <h3>Thông tin về các phương thức</h3>
+              <h3>Các phương thức xét tuyển</h3>
             </div>
             <div class="info-grid">
               <div class="info-item">
-                <strong>THPT:</strong> Thi THPT Quốc gia
+                <strong>THPT</strong> Thi tốt nghiệp THPT 2026 (thang 30) — phương thức gốc
               </div>
               <div class="info-item">
-                <strong>Tài năng:</strong> Xét tuyển tài năng
+                <strong>Tài năng</strong> Xét tuyển tài năng (thang 100)
               </div>
               <div class="info-item">
-                <strong>SAT:</strong> Scholastic Assessment Test
+                <strong>SAT</strong> Scholastic Assessment Test (thang 1600)
               </div>
               <div class="info-item">
-                <strong>ACT:</strong> American College Testing
+                <strong>ACT</strong> American College Testing (thang 36)
               </div>
               <div class="info-item">
-                <strong>HSA:</strong> High School Assessment
+                <strong>TSA</strong> Đánh giá tư duy — ĐH Bách khoa Hà Nội (thang 100)
               </div>
               <div class="info-item">
-                <strong>TSA:</strong> Thinking Skills Assessment
+                <strong>HSA</strong> Đánh giá năng lực — ĐHQG Hà Nội (thang 150)
               </div>
               <div class="info-item">
-                <strong>SPT:</strong> Special Performance Test
+                <strong>V-ACT</strong> Đánh giá năng lực — ĐHQG TP.HCM (thang 1200)
               </div>
               <div class="info-item">
-                <strong>APT:</strong> Advanced Placement Test
+                <strong>SPT</strong> Thi đánh giá — Trường ĐH Sư phạm Hà Nội (thang 30)
               </div>
               <div class="info-item">
-                <strong>Kết hợp:</strong> Phương thức kết hợp
+                <strong>Kết hợp</strong> Xét tuyển kết hợp (thang 30)
               </div>
             </div>
           </div>
-        </div>
+
+          <div class="info-card note-card">
+            <div class="info-header">
+              <i class="fas fa-circle-exclamation"></i>
+              <h3>Lưu ý</h3>
+            </div>
+            <ul class="note-list">
+              <li>
+                Quy đổi theo Bảng quy đổi tương đương tuyển sinh đại học chính quy
+                năm 2026 của Học viện (công bố 10/07/2026).
+              </li>
+              <li>
+                Không có điểm chênh lệch giữa các tổ hợp trong cùng một
+                ngành/chương trình.
+              </li>
+              <li>
+                Hai cơ sở Phía Bắc (BVH) và Phía Nam (BVS) có khoảng điểm khác
+                nhau ở một số phương thức — kết quả hiển thị riêng khi có khác biệt.
+              </li>
+              <li>
+                Kết quả chỉ mang tính tham khảo. Tra cứu chính thức tại
+                <a
+                  href="https://xettuyen.ptit.edu.vn/user/tracuuquydoidiem"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >xettuyen.ptit.edu.vn</a
+                >.
+              </li>
+            </ul>
+          </div>
+        </aside>
       </main>
 
       <!-- Footer -->
       <footer class="footer">
         <p>
-          &copy; 2025 <a href="https://www.facebook.com/BatHuPTIT/" target="_blank" >Tôi Yêu PTIT</a>. Developed with ❤️ for PTIT students.
+          &copy; 2026
+          <a href="https://www.facebook.com/BatHuPTIT/" target="_blank" rel="noopener noreferrer">Tôi Yêu PTIT</a>
+          · Developed with ❤️ for PTIT students ·
+          <a href="https://tuyensinh.ptit.edu.vn" target="_blank" rel="noopener noreferrer">tuyensinh.ptit.edu.vn</a>
         </p>
       </footer>
     </div>
 
-    <script src="script.js?v=11"></script>
+    <script src="script.js?v=12"></script>
   </body>
 </html>

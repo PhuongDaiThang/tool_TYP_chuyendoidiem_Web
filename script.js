@@ -1,221 +1,283 @@
-// API Configuration
+// ====== PTIT Score Converter 2026 ======
+// Nguồn: Thông báo Bảng quy đổi tương đương giữa các Phương thức xét tuyển
+// đại học hệ chính quy năm 2026 (10/07/2026) - Học viện CN Bưu chính Viễn thông
+
 // DOM Elements
 const converterForm = document.getElementById("converterForm");
 const convertBtn = document.getElementById("convertBtn");
-const loadingSpinner = document.getElementById("loadingSpinner");
 const resultSection = document.getElementById("resultSection");
 const errorSection = document.getElementById("errorSection");
-const convertedScore = document.getElementById("convertedScore");
-const bracketIndex = document.getElementById("bracketIndex");
+const resultContent = document.getElementById("resultContent");
 const errorContent = document.getElementById("errorContent");
+const scoreHint = document.getElementById("scoreHint");
+const swapBtn = document.getElementById("swapBtn");
 
 // Method names mapping for display
 const methodNames = {
-  thpt: "THPT Quốc gia",
-  tai_nang: "Tài năng",
+  thpt: "Thi tốt nghiệp THPT",
+  tai_nang: "Xét tuyển Tài năng",
   sat: "SAT",
   act: "ACT",
-  hsa: "HSA",
   tsa: "TSA",
+  hsa: "HSA",
+  v_act: "V-ACT",
   spt: "SPT",
-  apt: "APT",
-  ket_hop: "Kết hợp",
+  ket_hop: "Xét tuyển Kết hợp",
 };
 
-// ====== PTIT Score Converter Local Logic ======
-
-// 1. Định nghĩa phương thức
-const Method = {
-  thpt: "thpt",
-  tai_nang: "tai_nang",
-  sat: "sat",
-  act: "act",
-  hsa: "hsa",
-  tsa: "tsa",
-  spt: "spt",
-  apt: "apt",
-  ket_hop: "ket_hop",
-};
-
-// 2. Bảng khoảng điểm
-const BRACKETS = [
+// Bảng khoảng điểm 2026 - Cơ sở đào tạo Phía Bắc (BVH)
+const BRACKETS_NORTH = [
   {
-    thpt: [27.25, 30],
-    tai_nang: [85, 100],
+    thpt: [26.85, 30],
+    tai_nang: [92.33, 100],
     sat: [1450, 1600],
     act: [33, 36],
+    tsa: [64.4, 100],
     hsa: [105, 150],
-    tsa: [75.53, 100],
-    spt: [25, 30],
-    apt: [959, 1200],
-    ket_hop: [28.75, 30],
+    v_act: [968, 1200],
+    spt: [24.5, 30],
+    ket_hop: [29.5, 30],
   },
   {
-    thpt: [25.25, 27.25],
-    tai_nang: [80, 85],
+    thpt: [25.75, 26.85],
+    tai_nang: [84.67, 92.33],
     sat: [1350, 1450],
     act: [30, 33],
-    hsa: [97, 105],
-    tsa: [69.29, 75.53],
-    spt: [22.75, 25],
-    apt: [887, 959],
-    ket_hop: [27.75, 28.75],
+    tsa: [60.84, 64.4],
+    hsa: [99, 105],
+    v_act: [919, 968],
+    spt: [23.5, 24.5],
+    ket_hop: [28.8, 29.5],
   },
   {
-    thpt: [23.5, 25.25],
-    tai_nang: [42.5, 80],
+    thpt: [24.0, 25.75],
+    tai_nang: [80.5, 84.67],
     sat: [1250, 1350],
     act: [28, 30],
-    hsa: [91, 97],
-    tsa: [65.42, 69.29],
-    spt: [20.5, 22.75],
-    apt: [816, 887],
-    ket_hop: [26.5, 27.75],
+    tsa: [54.95, 60.84],
+    hsa: [87, 99],
+    v_act: [817, 919],
+    spt: [21.5, 23.5],
+    ket_hop: [27.8, 28.8],
   },
   {
-    thpt: [20.5, 23.5],
+    thpt: [22.5, 24.0],
+    tai_nang: [56.8, 80.5],
     sat: [1130, 1250],
     act: [25, 28],
-    hsa: [82, 91],
-    tsa: [59.5, 65.42],
-    spt: [18.25, 20.5],
-    apt: [702, 816],
-    ket_hop: [24.5, 26.5],
+    tsa: [51.25, 54.95],
+    hsa: [79, 87],
+    v_act: [736, 817],
+    spt: [16.0, 21.5],
+    ket_hop: [26.8, 27.8],
   },
   {
-    thpt: [19, 20.5],
-    hsa: [75, 82],
-    tsa: [50, 59.5],
-    spt: [15, 18.25],
-    apt: [600, 702],
-    ket_hop: [22.5, 24.5],
+    thpt: [20.0, 22.5],
+    tsa: [50.0, 51.25],
+    hsa: [75, 79],
+    v_act: [600, 736],
+    spt: [15.0, 16.0],
+    ket_hop: [20.23, 26.8],
   },
 ];
 
-// 3. Logic tìm bracket
-function findBracket(method, score) {
-  for (let i = 0; i < BRACKETS.length; i++) {
-    const rng = BRACKETS[i][method];
-    if (rng) {
-      let [a, b] = rng;
+// Bảng khoảng điểm 2026 - Cơ sở đào tạo Phía Nam (BVS)
+// Khác phía Bắc: Khoảng 4 Tài năng, Khoảng 5 THPT và Kết hợp
+const BRACKETS_SOUTH = [
+  {
+    thpt: [26.85, 30],
+    tai_nang: [92.33, 100],
+    sat: [1450, 1600],
+    act: [33, 36],
+    tsa: [64.4, 100],
+    hsa: [105, 150],
+    v_act: [968, 1200],
+    spt: [24.5, 30],
+    ket_hop: [29.5, 30],
+  },
+  {
+    thpt: [25.75, 26.85],
+    tai_nang: [84.67, 92.33],
+    sat: [1350, 1450],
+    act: [30, 33],
+    tsa: [60.84, 64.4],
+    hsa: [99, 105],
+    v_act: [919, 968],
+    spt: [23.5, 24.5],
+    ket_hop: [28.8, 29.5],
+  },
+  {
+    thpt: [24.0, 25.75],
+    tai_nang: [80.5, 84.67],
+    sat: [1250, 1350],
+    act: [28, 30],
+    tsa: [54.95, 60.84],
+    hsa: [87, 99],
+    v_act: [817, 919],
+    spt: [21.5, 23.5],
+    ket_hop: [27.8, 28.8],
+  },
+  {
+    thpt: [22.5, 24.0],
+    tai_nang: [59.53, 80.5],
+    sat: [1130, 1250],
+    act: [25, 28],
+    tsa: [51.25, 54.95],
+    hsa: [79, 87],
+    v_act: [736, 817],
+    spt: [16.0, 21.5],
+    ket_hop: [26.8, 27.8],
+  },
+  {
+    thpt: [16.5, 22.5],
+    tsa: [50.0, 51.25],
+    hsa: [75, 79],
+    v_act: [600, 736],
+    spt: [15.0, 16.0],
+    ket_hop: [19.03, 26.8],
+  },
+];
 
-      // Nếu THPT và đang ở bracket 5, chấp nhận cận dưới 16 (cho phía Nam)
-      if (method === "thpt" && i === 4) {
-        a = 16;
-      }
+const REGIONS = [
+  { key: "north", label: "Phía Bắc (BVH)", brackets: BRACKETS_NORTH },
+  { key: "south", label: "Phía Nam (BVS)", brackets: BRACKETS_SOUTH },
+];
 
-      if (a <= score && score <= b) {
-        return { index: i, range: [a, b] };
-      }
+// Tìm khoảng chứa điểm theo phương thức (duyệt từ khoảng 1 xuống,
+// điểm trùng biên thuộc về khoảng cao hơn: a <= x < b)
+function findBracket(brackets, method, score) {
+  for (let i = 0; i < brackets.length; i++) {
+    const rng = brackets[i][method];
+    if (rng && rng[0] <= score && score <= rng[1]) {
+      return { index: i, range: rng };
     }
   }
-  throw new Error(`Score ${score} vượt ngoài mọi khoảng của '${method}'`);
+  return null;
 }
 
-// 4. Logic quy đổi điểm
-function convertScore(src, tgt, score) {
-  const { index, range } = findBracket(src, score);
-  const tgtRng = BRACKETS[index][tgt];
-
+// Quy đổi tuyến tính trong khoảng theo công thức của Bộ GD&ĐT:
+// y = c + (x - a) * (d - c) / (b - a)
+function convertForRegion(brackets, src, tgt, score) {
+  const hit = findBracket(brackets, src, score);
+  if (!hit) {
+    return { ok: false, reason: "out_of_range" };
+  }
+  const tgtRng = brackets[hit.index][tgt];
   if (!tgtRng) {
-    throw new Error(`Khoảng ${index + 1} không có dữ liệu cho '${tgt}'`);
+    return { ok: false, reason: "no_target", bracket: hit.index + 1 };
   }
-
-  const [a, b] = range;
+  const [a, b] = hit.range;
   const [c, d] = tgtRng;
-
-  const isThptSpecial = index === 4 && (src === "thpt" || tgt === "thpt");
-
-  if (isThptSpecial) {
-    const aNorth = 19;
-    const aSouth = 16;
-
-    let yNorth = null;
-    let ySouth = null;
-
-    // 1. Nếu nguồn là THPT, xử lý riêng theo 2 miền
-    if (src === "thpt") {
-      if (score >= aNorth && score <= b) {
-        yNorth = b === aNorth ? c : c + ((score - aNorth) * (d - c)) / (b - aNorth);
-        yNorth = Math.round(yNorth * 10000) / 10000;
-      }
-      if (score >= aSouth && score <= b) {
-        ySouth = b === aSouth ? c : c + ((score - aSouth) * (d - c)) / (b - aSouth);
-        ySouth = Math.round(ySouth * 10000) / 10000;
-      }
-    }
-
-    // 2. Nếu đích là THPT, xử lý riêng 2 miền với a_thpt khác nhau
-    else if (tgt === "thpt") {
-      if (score >= a && score <= b) {
-        // Bắc: THPT = 19 + nội suy
-        yNorth = 19 + ((score - a) * (20.5 - 19)) / (b - a);
-        yNorth = Math.round(yNorth * 10000) / 10000;
-
-        // Nam: THPT = 16 + nội suy
-        ySouth = 16 + ((score - a) * (20.5 - 16)) / (b - a);
-        ySouth = Math.round(ySouth * 10000) / 10000;
-      }
-    }
-
-    return {
-      converted_north: yNorth,
-      converted_south: ySouth,
-      bracket_index: index + 1,
-      special_case: true,
-    };
-  }
-
-  // 3. Trường hợp thông thường
   const y = b === a ? c : c + ((score - a) * (d - c)) / (b - a);
   return {
-    converted_score: Math.round(y * 10000) / 10000,
-    bracket_index: index + 1,
-    special_case: false,
+    ok: true,
+    value: Math.round(y * 10000) / 10000,
+    bracket: hit.index + 1,
   };
 }
 
+function convertScore(src, tgt, score) {
+  const north = convertForRegion(BRACKETS_NORTH, src, tgt, score);
+  const south = convertForRegion(BRACKETS_SOUTH, src, tgt, score);
+  const same =
+    north.ok &&
+    south.ok &&
+    north.value === south.value &&
+    north.bracket === south.bracket;
+  return { north, south, same };
+}
 
+// Khoảng điểm hợp lệ của một phương thức (gộp cả 2 cơ sở) để gợi ý nhập liệu
+function getMethodRange(method) {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const region of REGIONS) {
+    for (const bracket of region.brackets) {
+      const rng = bracket[method];
+      if (rng) {
+        min = Math.min(min, rng[0]);
+        max = Math.max(max, rng[1]);
+      }
+    }
+  }
+  return min === Infinity ? null : [min, max];
+}
 
-// ====== END PTIT Score Converter Local Logic ======
+function formatNumber(v) {
+  // Hiển thị tối đa 2 chữ số thập phân, bỏ số 0 thừa
+  return parseFloat(v.toFixed(2)).toString();
+}
 
-// Initialize the application
+// ====== UI logic ======
+
 document.addEventListener("DOMContentLoaded", function () {
   initializeForm();
   addFormValidation();
 });
 
 function initializeForm() {
-  // Add form submit event listener
-  converterForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    handleFormSubmit(e);
-  });
-  
-  // Add input validation
+  converterForm.addEventListener("submit", handleFormSubmit);
+
   const scoreInput = document.getElementById("score");
   const sourceSelect = document.getElementById("sourceMethod");
   const targetSelect = document.getElementById("targetMethod");
 
-  // Real-time validation
   scoreInput.addEventListener("input", validateScore);
-  sourceSelect.addEventListener("change", validateSelects);
+  sourceSelect.addEventListener("change", function () {
+    validateSelects();
+    updateScoreHint();
+  });
   targetSelect.addEventListener("change", validateSelects);
 
-  // Add enter key support
-  document.addEventListener("keydown", function (e) {
-  if (e.key === "Enter" && !convertBtn.classList.contains("loading")) {
-    const activeEl = document.activeElement;
-    if (
-      converterForm.contains(activeEl) &&
-      (activeEl.tagName === "INPUT" || activeEl.tagName === "SELECT")
-    ) {
-      e.preventDefault();
-      converterForm.dispatchEvent(new Event("submit"));
-    }
-  }
-});
+  swapBtn.addEventListener("click", function () {
+    const tmp = sourceSelect.value;
+    sourceSelect.value = targetSelect.value;
+    targetSelect.value = tmp;
+    validateSelects();
+    updateScoreHint();
+    hideResults();
+  });
 
+  // Enter để quy đổi
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !convertBtn.classList.contains("loading")) {
+      const activeEl = document.activeElement;
+      if (
+        converterForm.contains(activeEl) &&
+        (activeEl.tagName === "INPUT" || activeEl.tagName === "SELECT")
+      ) {
+        e.preventDefault();
+        converterForm.dispatchEvent(new Event("submit"));
+      }
+    }
+  });
+
+  // Sao chép điểm khi nhấn vào (event delegation vì kết quả render động)
+  resultContent.addEventListener("click", function (e) {
+    const valueEl = e.target.closest(".result-value[data-copy]");
+    if (valueEl && navigator.clipboard) {
+      navigator.clipboard.writeText(valueEl.dataset.copy).then(() => {
+        showToast("Đã sao chép " + valueEl.dataset.copy + " vào clipboard!");
+      });
+    }
+  });
+}
+
+function updateScoreHint() {
+  const method = document.getElementById("sourceMethod").value;
+  if (!method) {
+    scoreHint.textContent = "";
+    return;
+  }
+  const range = getMethodRange(method);
+  if (range) {
+    scoreHint.innerHTML =
+      '<i class="fas fa-circle-info"></i> Khoảng quy đổi hợp lệ: <strong>' +
+      formatNumber(range[0]) +
+      " – " +
+      formatNumber(range[1]) +
+      "</strong>";
+  }
 }
 
 function addFormValidation() {
@@ -224,7 +286,6 @@ function addFormValidation() {
     input.addEventListener("blur", function () {
       validateField(this);
     });
-
     input.addEventListener("focus", function () {
       clearFieldError(this);
     });
@@ -235,14 +296,12 @@ function validateField(field) {
   const value = field.value.trim();
   const fieldGroup = field.closest(".form-group");
 
-  // Remove existing error states
   fieldGroup.classList.remove("error");
   const existingError = fieldGroup.querySelector(".error-message");
   if (existingError) {
     existingError.remove();
   }
 
-  // Validate based on field type
   if (field.hasAttribute("required") && !value) {
     showFieldError(fieldGroup, "Trường này là bắt buộc");
     return false;
@@ -300,89 +359,6 @@ function validateSelects() {
   }
 }
 
-async function testGetDiem() {
-  // Get form data
-  // {
-  //   thpt: [23.5, 25.25],
-  //   tai_nang: [42.5, 80],
-  //   sat: [1250, 1350],
-  //   act: [28, 30],
-  //   hsa: [91, 97],
-  //   tsa: [65.42, 69.29],
-  //   spt: [20.5, 22.75],
-  //   apt: [816, 887],
-  //   ket_hop: [26.5, 27.75],
-  // },
-  let list_get_diem = ["sat", "act", "spt", "apt"]
-  const arr = [
-  25.10, 24.87, 26.19, 24.61, 25.50, 25.80, 25.21, 25.67,
-  26.21, 24.40, 22.67, 25.25, 24.00, 22.75, 24.20, 25.10,
-  24.00, 23.47, 22.50, 23.63, 23.60, 23.14, 21.00, 22.65,
-  22.00, 23.48, 23.48, 22.20
-];
-
-  for(let i = 0; i<arr.length; i++)
-  {
-    console.log("THPT " +  arr[i] );
-    for(let j = 0; j< list_get_diem.length; j++)
-    {
-      let response = convertScore(
-      "thpt",
-      list_get_diem[j],
-      arr[i]
-      );
-    let isSpecial = response.special_case;
-    if (isSpecial) {
-      console.log("bắc" + list_get_diem[j] +  " " + response.converted_north.toFixed(4))
-      console.log("nam" + list_get_diem[j] + " " + response.converted_south.toFixed(4))
-    } else {
-      convertedScore.textContent = response.converted_score.toFixed(4);
-      console.log("bắc + nam" + " " + list_get_diem[j] + " "+ response.converted_score.toFixed(4))
-    }
-    }
-  }
-}
-
-
-// Replace handleFormSubmit to use local logic
-async function handleFormSubmit(e) {
-  e.preventDefault();
-
-  // Validate form
-  if (!validateForm()) {
-    return;
-  }
-
-  // Get form data
-  const formData = new FormData(converterForm);
-  const requestData = {
-    source_method: formData.get("source_method"),
-    target_method: formData.get("target_method"),
-    score: parseFloat(formData.get("score")),
-  };
-
-  setLoadingState(true);
-  hideResults();
-
-  try {
-    // Local conversion logic
-    const response = convertScore(
-      requestData.source_method,
-      requestData.target_method,
-      requestData.score
-    );
-    displayResult(response, requestData);
-    resultSection.classList.add("success-pulse");
-    setTimeout(() => {
-      resultSection.classList.remove("success-pulse");
-    }, 600);
-  } catch (error) {
-    displayError(error);
-  } finally {
-    setLoadingState(false);
-  }
-}
-
 function validateForm() {
   const inputs = document.querySelectorAll("input[required], select[required]");
   let isValid = true;
@@ -393,7 +369,6 @@ function validateForm() {
     }
   });
 
-  // Additional validation for selects
   validateSelects();
   const targetSelect = document.getElementById("targetMethod");
   if (targetSelect.validationMessage) {
@@ -407,95 +382,122 @@ function validateForm() {
   return isValid;
 }
 
-function displayResult(response, requestData) {
-  const isSpecial = response.special_case;
+function handleFormSubmit(e) {
+  e.preventDefault();
 
-  if (isSpecial) {
-    const north = response.converted_north !== null
-      ? `<strong>${response.converted_north.toFixed(2)}</strong>`
-      : `<span style="color: #ffffff;">Chưa đủ điểm sàn</span>`;
-
-    const south = response.converted_south !== null
-      ? `<strong>${response.converted_south.toFixed(2)}</strong>`
-      : `<span style="color: #ffffff;">Chưa đủ điểm sàn</span>`;
-
-    convertedScore.innerHTML = `
-      <div>Phía Bắc: ${north}</div>
-      <div>Phía Nam: ${south}</div>
-    `;
-  } else {
-    convertedScore.textContent = response.converted_score.toFixed(2);
+  if (!validateForm()) {
+    return;
   }
 
-  bracketIndex.textContent = response.bracket_index;
-  updateResultDetails(requestData, response);
+  const formData = new FormData(converterForm);
+  const src = formData.get("source_method");
+  const tgt = formData.get("target_method");
+  const score = parseFloat(formData.get("score"));
 
+  setLoadingState(true);
+  hideResults();
+
+  try {
+    const result = convertScore(src, tgt, score);
+    if (!result.north.ok && !result.south.ok) {
+      displayError(buildErrorMessage(result.north, src, tgt, score));
+    } else {
+      displayResult(result, src, tgt, score);
+      resultSection.classList.add("success-pulse");
+      setTimeout(() => {
+        resultSection.classList.remove("success-pulse");
+      }, 600);
+    }
+  } catch (error) {
+    displayError(error.message || "Có lỗi xảy ra trong quá trình quy đổi điểm.");
+  } finally {
+    setLoadingState(false);
+  }
+}
+
+function buildErrorMessage(regionResult, src, tgt, score) {
+  if (regionResult.reason === "no_target") {
+    return (
+      "Khoảng " +
+      regionResult.bracket +
+      " không có dữ liệu quy đổi sang " +
+      methodNames[tgt] +
+      ". Vui lòng thử phương thức đích khác."
+    );
+  }
+  const range = getMethodRange(src);
+  let msg =
+    "Điểm " + formatNumber(score) + " nằm ngoài khoảng quy đổi của phương thức " +
+    methodNames[src] + ".";
+  if (range) {
+    msg +=
+      " Khoảng hợp lệ: " +
+      formatNumber(range[0]) +
+      " – " +
+      formatNumber(range[1]) +
+      ".";
+  }
+  return msg;
+}
+
+function regionResultHTML(label, regionResult, tgt) {
+  if (!regionResult.ok) {
+    const reasonText =
+      regionResult.reason === "no_target"
+        ? "Khoảng " + regionResult.bracket + " không có dữ liệu cho " + methodNames[tgt]
+        : "Ngoài khoảng quy đổi";
+    return (
+      '<div class="result-item">' +
+      '<span class="result-label"><i class="fas fa-location-dot"></i> ' + label + "</span>" +
+      '<span class="result-value result-value-muted">' + reasonText + "</span>" +
+      "</div>"
+    );
+  }
+  const display = formatNumber(regionResult.value);
+  return (
+    '<div class="result-item">' +
+    '<span class="result-label"><i class="fas fa-location-dot"></i> ' + label +
+    ' <span class="bracket-chip">Khoảng ' + regionResult.bracket + "</span></span>" +
+    '<span class="result-value" data-copy="' + display + '" title="Nhấn để sao chép">' +
+    display + "</span>" +
+    "</div>"
+  );
+}
+
+function displayResult(result, src, tgt, score) {
+  let html =
+    '<div class="result-summary">' +
+    '<span class="method-chip">' + methodNames[src] + ": " + formatNumber(score) + "</span>" +
+    '<i class="fas fa-arrow-right-long"></i>' +
+    '<span class="method-chip">' + methodNames[tgt] + "</span>" +
+    "</div>";
+
+  if (result.same) {
+    const display = formatNumber(result.north.value);
+    html +=
+      '<div class="result-main">' +
+      '<span class="result-main-value result-value" data-copy="' + display +
+      '" title="Nhấn để sao chép">' + display + "</span>" +
+      '<span class="result-main-caption">Cả hai cơ sở BVH &amp; BVS · Khoảng ' +
+      result.north.bracket + "</span>" +
+      "</div>";
+  } else {
+    html += regionResultHTML("Phía Bắc (BVH)", result.north, tgt);
+    html += regionResultHTML("Phía Nam (BVS)", result.south, tgt);
+  }
+
+  resultContent.innerHTML = html;
   errorSection.style.display = "none";
   resultSection.style.display = "block";
 
-  resultSection.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-  });
+  resultSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-
-
-function updateResultDetails(requestData, response) {
-  const resultContent = document.querySelector(".result-content");
-
-  // Remove existing additional info
-  const existingInfo = resultContent.querySelector(".conversion-info");
-  if (existingInfo) {
-    existingInfo.remove();
-  }
-
-  // Add conversion details
-  const conversionInfo = document.createElement("div");
-  conversionInfo.className = "conversion-info";
-  conversionInfo.innerHTML = `
-        <div class="result-item">
-            <span class="result-label">Từ:</span>
-            <span class="result-value">${
-              methodNames[requestData.source_method]
-            } (${requestData.score})</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">Sang:</span>
-            <span class="result-value">${
-              methodNames[requestData.target_method]
-            }</span>
-        </div>
-    `;
-
-  resultContent.appendChild(conversionInfo);
-}
-
-function displayError(error) {
-  console.error("API Error:", error);
-
-  let errorMessage = "Có lỗi xảy ra trong quá trình quy đổi điểm.";
-
-  if (error.message.includes("Failed to fetch")) {
-    errorMessage =
-      "Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet và thử lại.";
-  } else if (error.message.includes("HTTP")) {
-    errorMessage = `Lỗi server: ${error.message}`;
-  } else if (error.message) {
-    errorMessage = error.message;
-  }
-
-  errorContent.textContent = errorMessage;
-
-  // Show error section
+function displayError(message) {
+  errorContent.textContent = message;
   resultSection.style.display = "none";
   errorSection.style.display = "block";
-
-  // Smooth scroll to error
-  errorSection.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-  });
+  errorSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function setLoadingState(isLoading) {
@@ -513,88 +515,29 @@ function hideResults() {
   errorSection.style.display = "none";
 }
 
-// Utility functions
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// Enhanced form interactions
-document.addEventListener("DOMContentLoaded", function () {
-  // Add smooth transitions for form elements
-  const formElements = document.querySelectorAll("input, select");
-  formElements.forEach((element) => {
-    element.addEventListener("focus", function () {
-      this.parentElement.style.transform = "translateY(-2px)";
-    });
-
-    element.addEventListener("blur", function () {
-      this.parentElement.style.transform = "translateY(0)";
-    });
-  });
-
-  // Add copy to clipboard functionality for results
-  const resultValues = document.querySelectorAll(".result-value");
-  resultValues.forEach((value) => {
-    value.addEventListener("click", function () {
-      if (this.textContent !== "--") {
-        navigator.clipboard.writeText(this.textContent).then(() => {
-          showToast("Đã sao chép vào clipboard!");
-        });
-      }
-    });
-  });
-});
-
 function showToast(message) {
-  // Create toast element
+  const existing = document.querySelector(".toast");
+  if (existing) {
+    existing.remove();
+  }
+
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.textContent = message;
-
-  // Add toast styles
-  Object.assign(toast.style, {
-    position: "fixed",
-    top: "20px",
-    right: "20px",
-    background: "#4ecdc4",
-    color: "white",
-    padding: "12px 20px",
-    borderRadius: "8px",
-    zIndex: "1000",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-    transform: "translateX(300px)",
-    transition: "transform 0.3s ease",
-    fontSize: "14px",
-    fontWeight: "500",
-  });
-
   document.body.appendChild(toast);
 
-  // Animate in
   setTimeout(() => {
-    toast.style.transform = "translateX(0)";
-  }, 100);
+    toast.classList.add("show");
+  }, 50);
 
-  // Remove after 3 seconds
   setTimeout(() => {
-    toast.style.transform = "translateX(300px)";
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 300);
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
 
-// Add keyboard shortcuts
+// Phím tắt: Ctrl/Cmd + Enter để quy đổi, Escape để ẩn kết quả
 document.addEventListener("keydown", function (e) {
-  // Ctrl/Cmd + Enter to submit
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
     e.preventDefault();
     if (!convertBtn.classList.contains("loading")) {
@@ -602,47 +545,7 @@ document.addEventListener("keydown", function (e) {
     }
   }
 
-  // Escape to clear results
   if (e.key === "Escape") {
     hideResults();
   }
 });
-
-// Add CSS for field errors
-const errorStyles = document.createElement("style");
-errorStyles.textContent = `
-    .form-group.error input,
-    .form-group.error select {
-        border-color: #ff6b6b !important;
-        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1) !important;
-    }
-    
-    .error-message {
-        color: #ff6b6b;
-        font-size: 0.85rem;
-        margin-top: 5px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .error-message::before {
-        content: "⚠";
-        font-size: 0.9rem;
-    }
-    
-    .form-group {
-        transition: transform 0.2s ease;
-    }
-    
-    .result-value {
-        cursor: pointer;
-        transition: color 0.2s ease;
-    }
-    
-    .result-value:hover {
-        color: rgba(255, 255, 255, 0.8);
-    }
-`;
-document.head.appendChild(errorStyles);
-testGetDiem()

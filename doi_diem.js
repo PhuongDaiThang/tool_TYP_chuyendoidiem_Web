@@ -1,17 +1,17 @@
-// ptit_converter.js
+// ptit_converter.js - Quy đổi điểm PTIT 2026 (CLI)
 "use strict";
 const readline = require("readline");
 
 /** ===== Method names for display ===== */
 const methodNames = {
-  thpt: "THPT Quốc gia",
+  thpt: "THPT",
   tai_nang: "Tài năng",
   sat: "SAT",
   act: "ACT",
-  hsa: "HSA",
   tsa: "TSA",
+  hsa: "HSA",
+  v_act: "V-ACT",
   spt: "SPT",
-  apt: "APT",
   ket_hop: "Kết hợp",
 };
 
@@ -21,120 +21,162 @@ const Method = {
   tai_nang: "tai_nang",
   sat: "sat",
   act: "act",
-  hsa: "hsa",
   tsa: "tsa",
+  hsa: "hsa",
+  v_act: "v_act",
   spt: "spt",
-  apt: "apt",
   ket_hop: "ket_hop",
 };
 
-/** ===== Brackets ===== */
-const BRACKETS = [
+/** ===== Brackets 2026 - Phía Bắc (BVH) ===== */
+const BRACKETS_NORTH = [
   {
-    thpt: [27.25, 30],
-    tai_nang: [85, 100],
+    thpt: [26.85, 30],
+    tai_nang: [92.33, 100],
     sat: [1450, 1600],
     act: [33, 36],
+    tsa: [64.4, 100],
     hsa: [105, 150],
-    tsa: [75.53, 100],
-    spt: [25, 30],
-    apt: [959, 1200],
-    ket_hop: [28.75, 30],
+    v_act: [968, 1200],
+    spt: [24.5, 30],
+    ket_hop: [29.5, 30],
   },
   {
-    thpt: [25.25, 27.25],
-    tai_nang: [80, 85],
+    thpt: [25.75, 26.85],
+    tai_nang: [84.67, 92.33],
     sat: [1350, 1450],
     act: [30, 33],
-    hsa: [97, 105],
-    tsa: [69.29, 75.53],
-    spt: [22.75, 25],
-    apt: [887, 959],
-    ket_hop: [27.75, 28.75],
+    tsa: [60.84, 64.4],
+    hsa: [99, 105],
+    v_act: [919, 968],
+    spt: [23.5, 24.5],
+    ket_hop: [28.8, 29.5],
   },
   {
-    thpt: [23.5, 25.25],
-    tai_nang: [42.5, 80],
+    thpt: [24.0, 25.75],
+    tai_nang: [80.5, 84.67],
     sat: [1250, 1350],
     act: [28, 30],
-    hsa: [91, 97],
-    tsa: [65.42, 69.29],
-    spt: [20.5, 22.75],
-    apt: [816, 887],
-    ket_hop: [26.5, 27.75],
+    tsa: [54.95, 60.84],
+    hsa: [87, 99],
+    v_act: [817, 919],
+    spt: [21.5, 23.5],
+    ket_hop: [27.8, 28.8],
   },
   {
-    thpt: [20.5, 23.5],
+    thpt: [22.5, 24.0],
+    tai_nang: [56.8, 80.5],
     sat: [1130, 1250],
     act: [25, 28],
-    hsa: [82, 91],
-    tsa: [59.5, 65.42],
-    spt: [18.25, 20.5],
-    apt: [702, 816],
-    ket_hop: [24.5, 26.5],
+    tsa: [51.25, 54.95],
+    hsa: [79, 87],
+    v_act: [736, 817],
+    spt: [16.0, 21.5],
+    ket_hop: [26.8, 27.8],
   },
   {
-    thpt: [19, 20.5],
-    hsa: [75, 82],
-    tsa: [50, 59.5],
-    spt: [15, 18.25],
-    apt: [600, 702],
-    ket_hop: [22.5, 24.5],
+    thpt: [20.0, 22.5],
+    tsa: [50.0, 51.25],
+    hsa: [75, 79],
+    v_act: [600, 736],
+    spt: [15.0, 16.0],
+    ket_hop: [20.23, 26.8],
   },
 ];
 
-/** ===== Core logic (giữ nguyên như bạn) ===== */
-function findBracket(method, score) {
-  for (let i = 0; i < BRACKETS.length; i++) {
-    const rng = BRACKETS[i][method];
-    if (rng) {
-      let [a, b] = rng;
-      // Nếu THPT và đang ở bracket 5, chấp nhận cận dưới 16 (miền Nam)
-      if (method === "thpt" && i === 4) a = 16;
-      if (a <= score && score <= b) return { index: i, range: [a, b] };
+/** ===== Brackets 2026 - Phía Nam (BVS) =====
+ * Khác phía Bắc: Khoảng 4 Tài năng, Khoảng 5 THPT và Kết hợp */
+const BRACKETS_SOUTH = [
+  {
+    thpt: [26.85, 30],
+    tai_nang: [92.33, 100],
+    sat: [1450, 1600],
+    act: [33, 36],
+    tsa: [64.4, 100],
+    hsa: [105, 150],
+    v_act: [968, 1200],
+    spt: [24.5, 30],
+    ket_hop: [29.5, 30],
+  },
+  {
+    thpt: [25.75, 26.85],
+    tai_nang: [84.67, 92.33],
+    sat: [1350, 1450],
+    act: [30, 33],
+    tsa: [60.84, 64.4],
+    hsa: [99, 105],
+    v_act: [919, 968],
+    spt: [23.5, 24.5],
+    ket_hop: [28.8, 29.5],
+  },
+  {
+    thpt: [24.0, 25.75],
+    tai_nang: [80.5, 84.67],
+    sat: [1250, 1350],
+    act: [28, 30],
+    tsa: [54.95, 60.84],
+    hsa: [87, 99],
+    v_act: [817, 919],
+    spt: [21.5, 23.5],
+    ket_hop: [27.8, 28.8],
+  },
+  {
+    thpt: [22.5, 24.0],
+    tai_nang: [59.53, 80.5],
+    sat: [1130, 1250],
+    act: [25, 28],
+    tsa: [51.25, 54.95],
+    hsa: [79, 87],
+    v_act: [736, 817],
+    spt: [16.0, 21.5],
+    ket_hop: [26.8, 27.8],
+  },
+  {
+    thpt: [16.5, 22.5],
+    tsa: [50.0, 51.25],
+    hsa: [75, 79],
+    v_act: [600, 736],
+    spt: [15.0, 16.0],
+    ket_hop: [19.03, 26.8],
+  },
+];
+
+const REGIONS = {
+  north: { label: "Bắc (BVH)", brackets: BRACKETS_NORTH },
+  south: { label: "Nam (BVS)", brackets: BRACKETS_SOUTH },
+};
+
+/** ===== Core logic ===== */
+function findBracket(brackets, method, score) {
+  for (let i = 0; i < brackets.length; i++) {
+    const rng = brackets[i][method];
+    if (rng && rng[0] <= score && score <= rng[1]) {
+      return { index: i, range: rng };
     }
   }
-  throw new Error(`Score ${score} vượt ngoài mọi khoảng của '${method}'`);
+  return null;
+}
+
+function convertForRegion(brackets, src, tgt, score) {
+  const hit = findBracket(brackets, src, score);
+  if (!hit) {
+    return { ok: false, error: `Điểm ${score} nằm ngoài khoảng quy đổi của '${src}'` };
+  }
+  const tgtRng = brackets[hit.index][tgt];
+  if (!tgtRng) {
+    return { ok: false, error: `Khoảng ${hit.index + 1} không có dữ liệu cho '${tgt}'` };
+  }
+  const [a, b] = hit.range;
+  const [c, d] = tgtRng;
+  const y = b === a ? c : c + ((score - a) * (d - c)) / (b - a);
+  return { ok: true, value: Math.round(y * 10000) / 10000, bracket: hit.index + 1 };
 }
 
 function convertScore(src, tgt, score) {
-  const { index, range } = findBracket(src, score);
-  const tgtRng = BRACKETS[index][tgt];
-  if (!tgtRng) throw new Error(`Khoảng ${index + 1} không có dữ liệu cho '${tgt}'`);
-
-  const [a, b] = range;
-  const [c, d] = tgtRng;
-
-  const isThptSpecial = index === 4 && (src === "thpt" || tgt === "thpt");
-  if (isThptSpecial) {
-    const aNorth = 19;
-    const aSouth = 16;
-    let yNorth = null, ySouth = null;
-
-    if (src === "thpt") {
-      if (score >= aNorth && score <= b) {
-        yNorth = b === aNorth ? c : c + ((score - aNorth) * (d - c)) / (b - aNorth);
-        yNorth = Math.round(yNorth * 10000) / 10000;
-      }
-      if (score >= aSouth && score <= b) {
-        ySouth = b === aSouth ? c : c + ((score - aSouth) * (d - c)) / (b - aSouth);
-        ySouth = Math.round(ySouth * 10000) / 10000;
-      }
-    } else if (tgt === "thpt") {
-      if (score >= a && score <= b) {
-        yNorth = 19 + ((score - a) * (20.5 - 19)) / (b - a);
-        yNorth = Math.round(yNorth * 10000) / 10000;
-
-        ySouth = 16 + ((score - a) * (20.5 - 16)) / (b - a);
-        ySouth = Math.round(ySouth * 10000) / 10000;
-      }
-    }
-
-    return { converted_north: yNorth, converted_south: ySouth, bracket_index: index + 1, special_case: true };
-  }
-
-  const y = b === a ? c : c + ((score - a) * (d - c)) / (b - a);
-  return { converted_score: Math.round(y * 10000) / 10000, bracket_index: index + 1, special_case: false };
+  return {
+    north: convertForRegion(BRACKETS_NORTH, src, tgt, score),
+    south: convertForRegion(BRACKETS_SOUTH, src, tgt, score),
+  };
 }
 
 /** ===== Helpers ===== */
@@ -162,6 +204,14 @@ function parseNumbers(input) {
     .filter((v) => Number.isFinite(v));
 }
 
+function printRegion(prefix, tgt, r) {
+  if (!r.ok) {
+    console.log(`  ${prefix} ${tgt}: ${r.error}`);
+  } else {
+    console.log(`  ${prefix} ${tgt} ${r.value.toFixed(4)} (khoảng ${r.bracket})`);
+  }
+}
+
 function printResults(src, targets, arr, results) {
   const srcName = methodNames[src] || src.toUpperCase();
   for (let i = 0; i < arr.length; i++) {
@@ -169,17 +219,13 @@ function printResults(src, targets, arr, results) {
     console.log(`${srcName} ${score.toFixed(2)}`);
     for (const tgt of targets) {
       const r = results[i].results[tgt];
-      if (r?.error) {
-        console.log(`  ${tgt}: ERROR -> ${r.error}`);
-        continue;
-      }
-      if (r.special_case) {
-        const north = r.converted_north != null ? r.converted_north.toFixed(4) : "N/A";
-        const south = r.converted_south != null ? r.converted_south.toFixed(4) : "N/A";
-        console.log(`  bắc ${tgt} ${north}`);
-        console.log(`  nam ${tgt} ${south}`);
+      const sameValue =
+        r.north.ok && r.south.ok && r.north.value === r.south.value;
+      if (sameValue) {
+        console.log(`  bắc + nam ${tgt} ${r.north.value.toFixed(4)} (khoảng ${r.north.bracket})`);
       } else {
-        console.log(`  bắc + nam ${tgt} ${r.converted_score.toFixed(4)}`);
+        printRegion("bắc", tgt, r.north);
+        printRegion("nam", tgt, r.south);
       }
     }
   }
@@ -191,11 +237,7 @@ function convertArray(src, targets, arr) {
   return arr.map((score) => {
     const perTarget = {};
     for (const tgt of targets) {
-      try {
-        perTarget[tgt] = convertScore(src, tgt, Number(score));
-      } catch (e) {
-        perTarget[tgt] = { error: String(e.message || e) };
-      }
+      perTarget[tgt] = convertScore(src, tgt, Number(score));
     }
     return { score: Number(score), results: perTarget };
   });
@@ -212,8 +254,9 @@ function ask(rl, q) {
 
 async function mainInteractive() {
   const rl = createRL();
-  console.log("=== PTIT Score Converter (interactive) ===");
+  console.log("=== PTIT Score Converter 2026 (interactive) ===");
   console.log("Phương thức hợp lệ:", Object.keys(Method).join(", "));
+  console.log("Kết quả in riêng 2 cơ sở Bắc (BVH) / Nam (BVS) khi khác nhau");
   console.log("Nhập trống để dùng mặc định trong ngoặc []");
   console.log("");
 
@@ -223,8 +266,8 @@ async function mainInteractive() {
       const src = (await ask(rl, "Nguồn -- src [thpt]: ")).trim().toLowerCase() || "thpt";
       validateMethod(src);
 
-      const tgtRaw = await ask(rl, "Đích -- targets (CSV) [sat,act,spt,apt]: ");
-      const targets = parseTargets(tgtRaw || "sat,act,spt,apt");
+      const tgtRaw = await ask(rl, "Đích -- targets (CSV) [sat,act,spt,v_act]: ");
+      const targets = parseTargets(tgtRaw || "sat,act,spt,v_act");
       if (!targets.length) throw new Error("Bạn chưa nhập targets hợp lệ.");
 
       const arrRaw = await ask(
@@ -254,3 +297,5 @@ async function mainInteractive() {
 if (require.main === module) {
   mainInteractive();
 }
+
+module.exports = { convertScore, convertForRegion, BRACKETS_NORTH, BRACKETS_SOUTH, Method };
